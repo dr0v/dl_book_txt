@@ -1,5 +1,5 @@
 # 简单说明
-简单解析了两个友好的网站： zxcs.me 和 kenshu.com进行txt 书下载。
+简单解析了两个友好的网站： zxcs.me 和 kenshuzw.com 进行txt 书下载。
 
 ## 原理
 1. zxcs
