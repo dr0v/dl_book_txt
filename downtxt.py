@@ -110,7 +110,6 @@ def search_book(_book_name_):
         print('开始下载 ===========> ',book_name,down_url)
         recode = download(down_url,book_name)
         logger.write(book_name+'\t'+str(down_url)+recode+'\n')
-        time.sleep(5)
         if recode=='done':logger.close(),exit(1)
     else:
         print('很遗憾知轩藏书未找到该书，请确认书名是否正确。')
@@ -125,7 +124,6 @@ def search_book(_book_name_):
         print('开始下载 ===========> ',book_name,down_url)
         recode = download(down_url,book_name)
         logger.write(book_name+'\t'+str(down_url)+recode+'\n')
-        time.sleep(5)
         if recode=='done':logger.close(),exit(1)
     else:
         print('很遗憾啃书网未找到该书，请确认书名是否正确。')
@@ -136,13 +134,12 @@ def search_book(_book_name_):
     html = urlopen(url,data=data)
     obj = bf(html.read(),'html.parser')
     for tag in obj.find_all("div", class_="main"):
-        if tag.a.get_text() == _book_name_:
+        if _book_name_ in tag.a.get_text() :
             book_name,down_url = down_ijjxsw('https://m.ijjxsw.com'+tag.a.get('href'))
             print('开始下载 ===========> ',book_name,down_url)
             recode = download(down_url,book_name)
-        logger.write(book_name+'\t'+str(down_url)+recode+'\n')
-        time.sleep(5)
-        if recode=='done':logger.close(),exit(1)
+            logger.write(book_name+'\t'+str(down_url)+recode+'\n')
+            if recode=='done':logger.close(),exit(1)
     else:
         print('很遗憾久久小说网未找到该书，请确认书名是否正确。')
     logger.close()
@@ -155,7 +152,7 @@ def main():
     if args.name:
         search_book(args.name)
     else:
-        in_content = input('===========要下载的是 top 榜单？(y/n)')
+        in_content = input('===========要下载的是 top 榜单？(y/n)\t')
         if in_content.lower()=='y':
             downtoptxt()
         else:
