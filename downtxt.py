@@ -4,7 +4,7 @@
 #File    :   downtxt.py
 #Time    :   2021/07/08 15:19:27
 #Author  :   drov 
-#Version :   1.0
+#Version :   1.3
 #Contact :   drov.liu@gmail.com
 #Desc    :   None
 #usage   :   usage: downtxt.py [-h] [-v] [-n NAME]
@@ -71,6 +71,20 @@ def down_ksw(_url):
             down_url.append(tag.a.get('href'))
     return book_name,down_url
 
+def down_ijjxsw(_url):
+    html = urlopen(_url)
+    obj = bf(html.read(),'html.parser')
+    book_name = obj.h1.get_text()
+    down_url = []
+    for tag in obj.find_all("li"):
+        if tag.a and tag.a.get_text() == '下载TXT电子书':
+            html = urlopen('https://m.ijjxsw.com'+tag.a.get('href'))
+            obj = bf(html.read(),'html.parser')
+            for tagg in obj.find_all('li'):
+                if tagg.a and tagg.a.get_text() == 'txt电子书下载地址【TXT】':
+                    down_url.append('https://m.ijjxsw.com'+tagg.a.get('href'))
+    return book_name,down_url
+
 def downtoptxt():
     global local_path,logger
     f = open(local_path+'/txt_id.txt','r')
@@ -97,7 +111,7 @@ def search_book(_book_name_):
         recode = download(down_url,book_name)
         logger.write(book_name+'\t'+str(down_url)+recode+'\n')
         time.sleep(5)
-        if recode==200:logger.close(),exit(1)
+        if recode=='done':logger.close(),exit(1)
     else:
         print('很遗憾知轩藏书未找到该书，请确认书名是否正确。')
     
@@ -112,15 +126,30 @@ def search_book(_book_name_):
         recode = download(down_url,book_name)
         logger.write(book_name+'\t'+str(down_url)+recode+'\n')
         time.sleep(5)
-        if recode==200:logger.close(),exit(1)
+        if recode=='done':logger.close(),exit(1)
     else:
         print('很遗憾啃书网未找到该书，请确认书名是否正确。')
-    #print(obj)
+    
+    # search in ijjxsw.com 
+    data = bytes(urlencode({'show': 'writer,title','keyboard':_book_name_,'Submit22':'搜索'}), encoding='utf8')
+    url = 'https://m.ijjxsw.com/e/search/index.php'
+    html = urlopen(url,data=data)
+    obj = bf(html.read(),'html.parser')
+    for tag in obj.find_all("div", class_="main"):
+        if tag.a.get_text() == _book_name_:
+            book_name,down_url = down_ijjxsw('https://m.ijjxsw.com'+tag.a.get('href'))
+            print('开始下载 ===========> ',book_name,down_url)
+            recode = download(down_url,book_name)
+        logger.write(book_name+'\t'+str(down_url)+recode+'\n')
+        time.sleep(5)
+        if recode=='done':logger.close(),exit(1)
+    else:
+        print('很遗憾久久小说网未找到该书，请确认书名是否正确。')
     logger.close()
 
 def main():
     parser = argparse.ArgumentParser(description='搜索书并下载或直接下载 zxcstop 榜.')
-    parser.add_argument('-v','--version', action='version', version='%(prog)s 1.2')
+    parser.add_argument('-v','--version', action='version', version='%(prog)s 1.3')
     parser.add_argument('-n','--name', help='book name you want')
     args = parser.parse_args()
     if args.name:
