@@ -139,12 +139,12 @@ def search_book(_book_name_):
             print('开始下载 ===========> ',book_name,down_url)
             recode = download(down_url,book_name)
             logger.write(book_name+'\t'+str(down_url)+recode+'\n')
-            if recode=='done':logger.close(),exit(1)
+            if recode=='done':logger.close(),sys.exit("下载完成，拜拜咯")
         else:
             print('很遗憾知轩藏书未找到该书，请确认书名是否正确。')
     except:
-        print('error ============> \n', sys.exc_info())
-    
+        print('exit reason ============> ', sys.exc_info()[1])
+
     #search in kenshu.com
     data = bytes(urlencode({'searchkey': _book_name_}), encoding='utf8')
     url = 'http://www.kenshuzw.com/modules/article/search.php'
@@ -157,11 +157,11 @@ def search_book(_book_name_):
             print('开始下载 ===========> ',book_name,down_url)
             recode = download(down_url,book_name)
             logger.write(book_name+'\t'+str(down_url)+recode+'\n')
-            if recode=='done':logger.close(),exit(1)
+            if recode=='done':logger.close(),sys.exit("下载完成，拜拜咯")
         else:
             print('很遗憾啃书网未找到该书，请确认书名是否正确。')
     except:
-        print('error ============> \n', sys.exc_info())
+        print('exit reason ============> ', sys.exc_info()[1])
     
     # search in ijjxsw.com 
     data = bytes(urlencode({'show': 'writer,title','keyboard':_book_name_,'Submit22':'搜索'}), encoding='utf8')
@@ -176,11 +176,11 @@ def search_book(_book_name_):
                 print('开始下载 ===========> ',book_name,down_url)
                 recode = download(down_url,book_name)
                 logger.write(book_name+'\t'+str(down_url)+recode+'\n')
-                if recode=='done':logger.close(),exit(1)
+                if recode=='done':logger.close(),sys.exit("下载完成，拜拜咯")
         else:
             print('很遗憾久久小说网未找到该书，请确认书名是否正确。')
     except:
-        print('error ============> \n', sys.exc_info())
+        print('exit reason ============> ', sys.exc_info()[1])
     logger.close()
 
 def main():
