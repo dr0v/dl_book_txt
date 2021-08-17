@@ -69,6 +69,10 @@ def download(_down_url,_book_name):
         f.write(data)
         f.close()
         return re_code
+    else:
+        f = open(local_path+'/txt/'+_book_name,'wb+')
+        f.write(data)
+        f.close()
     return 'type err'
 
 def down_zxcs(_url):
@@ -139,7 +143,10 @@ def search_book(_book_name_):
             print('开始下载 ===========> ',book_name,down_url)
             recode = download(down_url,book_name)
             logger.write(book_name+'\t'+str(down_url)+recode+'\n')
-            if recode=='done':logger.close(),sys.exit("下载完成，拜拜咯")
+            if recode=='done':
+                logger.close()
+                print('下载完成~')
+                return 1
         else:
             print('很遗憾知轩藏书未找到该书，请确认书名是否正确。')
     except:
@@ -157,12 +164,38 @@ def search_book(_book_name_):
             print('开始下载 ===========> ',book_name,down_url)
             recode = download(down_url,book_name)
             logger.write(book_name+'\t'+str(down_url)+recode+'\n')
-            if recode=='done':logger.close(),sys.exit("下载完成，拜拜咯")
+            if recode=='done':
+                logger.close()
+                print('下载完成~')
+                return 1
         else:
             print('很遗憾啃书网未找到该书，请确认书名是否正确。')
     except:
         print('exit reason ============> ', sys.exc_info()[1])
     
+    # search in bookben.net
+    url = 'https://www.bookben.net/search/?searchkey='+quote(_book_name_)
+    try:
+        req = Request(url,headers=header)
+        html = urlopen(req).read()
+        obj = bf(html,'html.parser')
+        if obj.dt:
+            dt_list = obj.find_all("dt")
+            for dt in dt_list:
+                if dt.a and _book_name_ == dt.a.get_text():obj.dt = dt;break
+            book_name,down_url = obj.dt.a.get_text(),['https://down.bookben.net/modules/article/txtarticle.php?id='+obj.dt.a.get('href').split('/')[2].split('.')[0]]
+            print('开始下载 ===========> ',book_name,down_url)
+            recode = download(down_url,book_name)
+            logger.write(book_name+'\t'+str(down_url)+recode+'\n')
+            if recode=='done':
+                logger.close()
+                print('下载完成~')
+                return 1
+        else:
+            print('很遗憾知轩藏书未找到该书，请确认书名是否正确。')
+    except:
+        print('exit reason ============> ', sys.exc_info()[1])
+
     # search in ijjxsw.com 
     data = bytes(urlencode({'show': 'writer,title','keyboard':_book_name_,'Submit22':'搜索'}), encoding='utf8')
     url = 'https://m.ijjxsw.com/e/search/index.php'
@@ -176,7 +209,10 @@ def search_book(_book_name_):
                 print('开始下载 ===========> ',book_name,down_url)
                 recode = download(down_url,book_name)
                 logger.write(book_name+'\t'+str(down_url)+recode+'\n')
-                if recode=='done':logger.close(),sys.exit("下载完成，拜拜咯")
+                if recode=='done':
+                    logger.close()
+                    print('下载完成~')
+                    return 1
         else:
             print('很遗憾久久小说网未找到该书，请确认书名是否正确。')
     except:
