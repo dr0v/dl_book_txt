@@ -6,7 +6,7 @@
 #Author  :   drov 
 #Version :   1.3
 #Contact :   drov.liu@gmail.com
-#Desc    :   None
+#Desc    :   use to download txt for my cute wife
 #usage   :   usage: downtxt.py [-h] [-v] [-n NAME]
 #
 
