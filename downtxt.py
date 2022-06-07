@@ -44,6 +44,8 @@ USER_AGENTS = [
  "Opera/9.80 (Macintosh; Intel Mac OS X 10.6.8; U; fr) Presto/2.9.168 Version/11.52",
 ]
 
+_ijjxs_url = 'https://m.ijjxs.com'
+
 def download(_down_url,_book_name):
     global local_path
     re_code = 'none'
@@ -75,8 +77,9 @@ def download(_down_url,_book_name):
         f.close()
     return 'type err'
 
-def down_zxcs(_url):
-    html = urlopen(_url)
+def down_zxcs(_url, _header):
+    req = Request(_url, headers=_header)
+    html = urlopen(req)
     obj = bf(html.read(),'html.parser')
     book_name = obj.h2.get_text()
     down_url = []
@@ -84,8 +87,9 @@ def down_zxcs(_url):
         down_url.append(tag.a.get('href'))
     return book_name,down_url
 
-def down_ksw(_url):
-    html = urlopen(_url)
+def down_ksw(_url, _header):
+    req = Request(_url, headers=_header)
+    html = urlopen(req)
     obj = bf(html.read(),'html.parser')
     book_name = obj.h1.get_text()
     down_url = []
@@ -94,18 +98,20 @@ def down_ksw(_url):
             down_url.append(tag.a.get('href'))
     return book_name,down_url
 
-def down_ijjxsw(_url):
-    html = urlopen(_url)
+def down_ijjxsw(_url, _header):
+    req = Request(_url, headers=_header)
+    html = urlopen(req)
     obj = bf(html.read(),'html.parser')
     book_name = obj.h1.get_text()
     down_url = []
     for tag in obj.find_all("li"):
         if tag.a and tag.a.get_text() == '下载TXT电子书':
-            html = urlopen('https://m.ijjxsw.com'+tag.a.get('href'))
+            req = Request(_ijjxs_url+tag.a.get('href'), headers=_header)
+            html = urlopen(req)
             obj = bf(html.read(),'html.parser')
             for tagg in obj.find_all('li'):
                 if tagg.a and tagg.a.get_text() == 'txt电子书下载地址【TXT】':
-                    down_url.append('https://m.ijjxsw.com'+tagg.a.get('href'))
+                    down_url.append(_ijjxs_url+tagg.a.get('href'))
     return book_name,down_url
 
 def downtoptxt():
@@ -140,7 +146,7 @@ def search_book(_book_name_):
             dt_list = obj.find_all("dt")
             for dt in dt_list:
                 if dt.a and _book_name_ in dt.a.get_text().split('》')[0]:obj.dt = dt;break
-            book_name,down_url = down_zxcs('http://www.zxcs.me/download.php?id='+obj.dt.a.get('href').split('post')[1].replace('/',''))
+            book_name,down_url = down_zxcs('http://www.zxcs.me/download.php?id='+obj.dt.a.get('href').split('post')[1].replace('/',''), header)
             print('开始下载 ===========> ',book_name,down_url)
             recode = download(down_url,book_name)
             logger.write(book_name+'\t'+str(down_url)+recode+'\n')
@@ -151,7 +157,7 @@ def search_book(_book_name_):
         else:
             print('skip ============> 很遗憾知轩藏书未找到该书，请确认书名是否正确。')
     except:
-        print('exit reason ============> ', sys.exc_info()[1])
+        print('exit reason 0 ============> ', sys.exc_info()[1])
 
     #search in kenshu.com
     data = bytes(urlencode({'searchkey': _book_name_}), encoding='utf8')
@@ -161,7 +167,7 @@ def search_book(_book_name_):
         html = urlopen(req).read()
         obj = bf(html,'html.parser')
         if obj.h3 and obj.h3.get_text() == _book_name_:
-            book_name,down_url = down_ksw('http://m.kenshuzw.com/'+obj.h3.a.get('href'))
+            book_name,down_url = down_ksw('http://m.kenshuzw.com/'+obj.h3.a.get('href'), header)
             print('开始下载 ===========> ',book_name,down_url)
             recode = download(down_url,book_name)
             logger.write(book_name+'\t'+str(down_url)+recode+'\n')
@@ -172,7 +178,7 @@ def search_book(_book_name_):
         else:
             print('skip ============> 很遗憾啃书网未找到该书，请确认书名是否正确。')
     except:
-        print('exit reason ============> ', sys.exc_info()[1])
+        print('exit reason 1 ============> ', sys.exc_info()[1])
     
     # search in bookben.net
     url = 'https://www.bookben.net/search/?searchkey='+quote(_book_name_)
@@ -195,18 +201,18 @@ def search_book(_book_name_):
         else:
             print('skip ============> 很遗憾书本网未找到该书，请确认书名是否正确。')
     except:
-        print('exit reason ============> ', sys.exc_info()[1])
+        print('exit reason 2 ============> ', sys.exc_info()[1])
 
     # search in ijjxsw.com 
     data = bytes(urlencode({'show': 'writer,title','keyboard':_book_name_,'Submit22':'搜索'}), encoding='utf8')
-    url = 'https://m.ijjxsw.com/e/search/index.php'
+    url = _ijjxs_url+'/e/search/index.php'
     try:
-        req = Request(url,data=data,headers=header)
+        req = Request(url, data=data, headers=header,)
         html = urlopen(req).read()
         obj = bf(html,'html.parser')
         for tag in obj.find_all("div", class_="main"):
             if _book_name_ == tag.a.get_text() :
-                book_name,down_url = down_ijjxsw('https://m.ijjxsw.com'+tag.a.get('href'))
+                book_name,down_url = down_ijjxsw(_ijjxs_url+tag.a.get('href'), header)
                 print('开始下载 ===========> ',book_name,down_url)
                 recode = download(down_url,book_name)
                 logger.write(book_name+'\t'+str(down_url)+recode+'\n')
@@ -217,13 +223,13 @@ def search_book(_book_name_):
         else:
             print('skip ============> 很遗憾久久小说网未找到该书，请确认书名是否正确。')
     except:
-        print('exit reason ============> ', sys.exc_info()[1])
+        print('exit reason 3 ============> ', sys.exc_info()[1])
     logger.close()
 
 def main():
     parser = argparse.ArgumentParser(description='搜索书并下载或直接下载 zxcstop 榜.')
     parser.add_argument('-v','--version', action='version', version='%(prog)s 1.3')
-    parser.add_argument('-n','--name', help='book name you want')
+    parser.add_argument('-n','--name',default='农家小福女', help='book name you want')
     args = parser.parse_args()
     if args.name:
         search_book(args.name)
