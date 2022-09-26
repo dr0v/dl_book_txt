@@ -4,7 +4,7 @@
 #File    :   downtxt.py
 #Time    :   2021/07/08 15:19:27
 #Author  :   drov 
-#Version :   1.3
+#Version :   1.4
 #Contact :   drov.liu@gmail.com
 #Desc    :   use to download txt for my cute wife
 #usage   :   usage: downtxt.py [-h] [-v] [-n NAME]
@@ -45,6 +45,10 @@ USER_AGENTS = [
 ]
 
 _ijjxs_url = 'https://m.ijjxs.com'
+_zxcs_url = 'http://www.zxcs.me/index.php?keyword='
+_zxcs_durl = 'http://www.zxcs.me/download.php?id='
+_kenshu_url = 'http://www.kenshuzw.com/modules/article/search.php'
+_bookben_url = 'https://www.bookben.net/search/?searchkey='
 
 def download(_down_url,_book_name):
     global local_path
@@ -118,7 +122,7 @@ def downtoptxt():
     global local_path,logger
     f = open(local_path+'/txt_id.txt','r')
     for i in f.readlines():
-        url = 'http://www.zxcs.me/download.php?id='+i
+        url = _zxcs_durl+i
         book_name,down_url = down_zxcs(url)
         recode = download(down_url,book_name)
         print(i.replace('\n',''),book_name,recode)
@@ -137,7 +141,7 @@ def search_book(_book_name_):
     }
     recode = 'none'
     # search in zxcs.me
-    url = 'http://www.zxcs.me/index.php?keyword='+quote(_book_name_)#'《'+_book_name_+'》')
+    url = _zxcs_url+quote(_book_name_)#'《'+_book_name_+'》')
     try:
         req = Request(url,headers=header)
         html = urlopen(req).read()
@@ -146,7 +150,7 @@ def search_book(_book_name_):
             dt_list = obj.find_all("dt")
             for dt in dt_list:
                 if dt.a and _book_name_ in dt.a.get_text().split('》')[0]:obj.dt = dt;break
-            book_name,down_url = down_zxcs('http://www.zxcs.me/download.php?id='+obj.dt.a.get('href').split('post')[1].replace('/',''), header)
+            book_name,down_url = down_zxcs(_zxcs_durl+obj.dt.a.get('href').split('post')[1].replace('/',''), header)
             print('开始下载 ===========> ',book_name,down_url)
             recode = download(down_url,book_name)
             logger.write(book_name+'\t'+str(down_url)+recode+'\n')
@@ -161,7 +165,7 @@ def search_book(_book_name_):
 
     #search in kenshu.com
     data = bytes(urlencode({'searchkey': _book_name_}), encoding='utf8')
-    url = 'http://www.kenshuzw.com/modules/article/search.php'
+    url = _kenshu_url
     try:
         req = Request(url,data=data,headers=header)
         html = urlopen(req).read()
@@ -181,7 +185,7 @@ def search_book(_book_name_):
         print('exit reason 1 ============> ', sys.exc_info()[1])
     
     # search in bookben.net
-    url = 'https://www.bookben.net/search/?searchkey='+quote(_book_name_)
+    url = _bookben_url+quote(_book_name_)
     try:
         req = Request(url,headers=header)
         html = urlopen(req).read()
@@ -228,7 +232,7 @@ def search_book(_book_name_):
 
 def main():
     parser = argparse.ArgumentParser(description='搜索书并下载或直接下载 zxcstop 榜.')
-    parser.add_argument('-v','--version', action='version', version='%(prog)s 1.3')
+    parser.add_argument('-v','--version', action='version', version='%(prog)s 1.4')
     parser.add_argument('-n','--name',default='农家小福女', help='book name you want')
     args = parser.parse_args()
     if args.name:
